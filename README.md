@@ -1,2 +1,2 @@
 # RoboSoccer
-Game on Robo soccer made in C with raylib
+Game on Small bots playing soccer/football made in C with raylib
