@@ -11,7 +11,7 @@ endif
 
 # Defining Compiler and Compiler flags 
 CC := gcc
-CFLAGS := -Wall -Iinclude -Llib
+CFLAGS := -Wall -Iinclude 
 LDLIBS := -lraylib
 
 
@@ -19,17 +19,17 @@ LDLIBS := -lraylib
 
 ifeq ($(IS_WINDOWS), 1)
 	EXE_EXT := .exe
-	CFLAGS += -lgdi32 -lwinmm 
+	CFLAGS += -Llib/win -lgdi32 -lwinmm 
 endif
 
 ifeq ($(IS_LINUX), 1)
-	CFLAGS += -lGL -lm -lpthread -ldl -lrt -lX11
+	CFLAGS += -Llib/lin -lGL -lm -lpthread -ldl -lrt -lX11
 endif
 
 TARGET := main$(EXE_EXT)
 
 all: $(TARGET)
-	@echo "Successfully built: $(TARGET) ngga"
+	@echo "Successfully built: $(TARGET)"
 
 # Compile that shit
 $(TARGET): main.c
@@ -40,7 +40,3 @@ $(TARGET): main.c
 clean:
 	rm -f $(TARGET) 2>/dev/null || del /Q $(TARGET) 2>nul
 
-
-
-#default:
-#	gcc ../main.c -lraylib -lGL -lm -lpthread -Llib -Iinclude -ldl -lrt -lX11 -o ../main
