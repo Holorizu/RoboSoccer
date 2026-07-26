@@ -6,6 +6,7 @@ else
 	UNAMEOS = $(shell uname)
 	ifeq ($(UNAMEOS), Linux)
 	IS_LINUX := 1
+endif
 
 # Defining Compiler and Compiler flags 
 CC := gcc
