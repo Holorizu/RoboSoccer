@@ -15,7 +15,6 @@ int main()
 	{
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
-		DrawText("First screen of the game!",200,200, 40, DARKGRAY);
 		EndDrawing();
 	}
 
