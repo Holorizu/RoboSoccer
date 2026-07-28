@@ -1,4 +1,8 @@
 CompileFlags:
+  Compiler: C:/msys64/ucrt64/bin/gcc.exe
   Add:
     - -I/usr/local/include
     - -xc
+
+    - -IC:/raylib/src
+    - -IC:/msys64/mingw64/include
