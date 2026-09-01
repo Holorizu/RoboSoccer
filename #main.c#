@@ -41,7 +41,7 @@ int main()
 
     float playerX = 100;
     float playerY = 300;
-    float velocityY = 0.0f;
+    float velocity = 0.0f;
     float rotationside = 5.0f;
 
     Vector3 enemyBoxPos = { -4.0f, 1.0f, 0.0f };
@@ -86,7 +86,8 @@ int main()
 
 
 	// movement
-	if (IsKeyDown(KEY_RIGHT)) playerPosition.x += PLAYER_SPEED * dt;
+	if (IsKeyDown(KEY_RIGHT)) {
+	    velocity.y = PLAYER_SPEED * dt;
         else if (IsKeyDown(KEY_LEFT)) playerPosition.x -= PLAYER_SPEED * dt;
         else if (IsKeyDown(KEY_DOWN)) playerPosition.z += PLAYER_SPEED * dt;
         else if (IsKeyDown(KEY_UP)) playerPosition.z -= PLAYER_SPEED * dt;
