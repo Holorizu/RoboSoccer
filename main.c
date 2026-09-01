@@ -22,16 +22,6 @@ typedef struct ActionInput {
     int button;
 } ActionInput;
 
-static int gamepadIndex = 0;
-static ActionInput actionInputs[MAX_ACTION] = {0};
-
-
-static bool IsActionPressed(int action);
-static bool IsActionReleased(int action);
-static bool IsActionDown(int action);
-static void SetActionsDefault(void);
-static void SetActionsCursor(void);
-
 
 int main()
 {
@@ -39,154 +29,103 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 450;
 
+    
+
+
+    InitWindow(screenWidth, screenHeight, "Game_window");
+
     float playerX = 100;
     float playerY = 300;
     float velocityY = 0;
 
+    Vector3 playerPosition = { 0.0f, 1.0f, 2.0f };
+    Vector3 playerSize = { 1.0f, 2.0f, 1.0f };
+    Color playerColor = GREEN;
 
+    Vector3 enemyBoxPos = { -4.0f, 1.0f, 0.0f };
+    Vector3 enemyBoxSize = { 2.0f, 2.0f, 2.0f };
 
-    InitWindow(screenWidth, screenHeight, "Game_window");
+    Vector3 enemySpherePos = { 4.0f, 0.0f, 0.0f };
+
+    float enemySphereSize = 1.5f;
+    bool collision = false;
+
     SetTargetFPS(60);
 
-    // Defining Camera 	
-    Camera3D camera =  {0};
-    camera.position = (Vector3) {0.0f, 10.0f, 10.0f};     // Camera Position
-    camera.target = (Vector3) {0.0f, 0.0f, 0.0f};         // Camera Looking point
-    camera.up = (Vector3) {0.0f, 1.0f, 0.0f};		  // Camera up Vector (Rotation Towards Target)
-    camera.fovy = 60.0f;				  // Camera FOV Y axis?
-    camera.projection = CAMERA_PERSPECTIVE;
+    // Defining Camera
+    Camera camera = { { 0.0f, 10.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 45.0f, 0 };
 
-    int cameraMode = CAMERA_FIRST_PERSON;
-    float heights[MAX_COLUMNS] = {0};
-    Vector3 positions[MAX_COLUMNS] = {0};
-    Color colors[MAX_COLUMNS] = {0};
-
-    for (int i = 0; i < MAX_COLUMNS; i++)
-    {
-	heights[i] = (float)GetRandomValue(1, 12);
-	positions[i] = (Vector3){(float)GetRandomValue(-15, 15), heights[i] / 2.0f, (float)GetRandomValue(-15, 15)};
-	colors[i] = (Color){GetRandomValue(20, 255), GetRandomValue(10, 55), 30, 255};
-    }
 
     DisableCursor();
 
-
-
     // Defining idk (i just wanna move the cube)
     char actionSet = 0;
-    SetActionsDefault();
     bool releaseAction = false;
 
     Vector3 position = (Vector3){0.0f, 0.0f, 0.0f};
     Vector3 size = (Vector3){40.0f, 40.0f, 40.0f};
 
 
-
-
     while (!WindowShouldClose())
     {
 	float deltaTime = GetFrameTime();
 
-	if (IsActionPressed(ACTION_UP))
-	    position.y -= 2;
-	if (IsActionPressed(ACTION_DOWN))
-	    position.y += 2;
-	if (IsActionPressed(ACTION_DOWN))
-	    position.x -= 2;
-	if (IsActionPressed(ACTION_DOWN))
-	    position.x += 2;
+	// update
 
-	if (IsKeyPressed(KEY_ONE))
-	{
-	    cameraMode = CAMERA_FREE;
-	    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f }; // Reset roll
-	}
+	// movement
+	if (IsKeyDown(KEY_RIGHT)) playerPosition.x += 0.2f;
+        else if (IsKeyDown(KEY_LEFT)) playerPosition.x -= 0.2f;
+        else if (IsKeyDown(KEY_DOWN)) playerPosition.z += 0.2f;
+        else if (IsKeyDown(KEY_UP)) playerPosition.z -= 0.2f;
+	
+	collision = false;
 
-	if (IsKeyPressed(KEY_TWO))
-	{
-	    cameraMode = CAMERA_FIRST_PERSON;
-	    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f }; // Reset roll
-	}
+        // Check collisions player vs enemy-box
+        if (CheckCollisionBoxes(
+            (BoundingBox){(Vector3){ playerPosition.x - playerSize.x/2,
+                                     playerPosition.y - playerSize.y/2,
+                                     playerPosition.z - playerSize.z/2 },
+                          (Vector3){ playerPosition.x + playerSize.x/2,
+                                     playerPosition.y + playerSize.y/2,
+                                     playerPosition.z + playerSize.z/2 }},
+            (BoundingBox){(Vector3){ enemyBoxPos.x - enemyBoxSize.x/2,
+                                     enemyBoxPos.y - enemyBoxSize.y/2,
+                                     enemyBoxPos.z - enemyBoxSize.z/2 },
+                          (Vector3){ enemyBoxPos.x + enemyBoxSize.x/2,
+                                     enemyBoxPos.y + enemyBoxSize.y/2,
+                                     enemyBoxPos.z + enemyBoxSize.z/2 }})) collision = true;
 
-	if (IsKeyPressed(KEY_THREE))
-	{
-	    cameraMode = CAMERA_THIRD_PERSON;
-	    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f }; // Reset roll
-	}
+        // Check collisions player vs enemy-sphere
+        if (CheckCollisionBoxSphere(
+            (BoundingBox){(Vector3){ playerPosition.x - playerSize.x/2,
+                                     playerPosition.y - playerSize.y/2,
+                                     playerPosition.z - playerSize.z/2 },
+                          (Vector3){ playerPosition.x + playerSize.x/2,
+                                     playerPosition.y + playerSize.y/2,
+                                     playerPosition.z + playerSize.z/2 }},
+            enemySpherePos, enemySphereSize)) collision = true;
 
-	if (IsKeyPressed(KEY_FOUR))
-	{
-	    cameraMode = CAMERA_ORBITAL;
-	    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f }; // Reset roll
-	}
+        if (collision) playerColor = RED;
+        else playerColor = GREEN;
 
-	// Switch camera projection
-	if (IsKeyPressed(KEY_P))
-	{
-	    if (camera.projection == CAMERA_PERSPECTIVE)
-	    {
-		// Create isometric view
-		cameraMode = CAMERA_THIRD_PERSON;
-		// Note: The target distance is related to the render distance in the orthographic projection
-		camera.position = (Vector3){ 0.0f, 2.0f, -100.0f };
-		camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };
-		camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-		camera.projection = CAMERA_ORTHOGRAPHIC;
-		camera.fovy = 20.0f; // near plane width in CAMERA_ORTHOGRAPHIC
-		CameraYaw(&camera, -135*DEG2RAD, true);
-		CameraPitch(&camera, -45*DEG2RAD, true, true, false);
-	    }
-	    else if (camera.projection == CAMERA_ORTHOGRAPHIC)
-	    {
-		// Reset to default view
-		cameraMode = CAMERA_THIRD_PERSON;
-		camera.position = (Vector3){ 0.0f, 2.0f, 10.0f };
-		camera.target = (Vector3){ 0.0f, 2.0f, 0.0f };
-		camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-		camera.projection = CAMERA_PERSPECTIVE;
-		camera.fovy = 60.0f;
-	    }
-	}
-
-	releaseAction = false;
-	    
-
-	UpdateCamera(&camera, CAMERA_FREE);				   // Camera updating 	
-
-	if (IsKeyPressed(KEY_Z)) camera.target = (Vector3) {0.0f, 0.0f, 0.0f};
-
-
+	
 	BeginDrawing();
-
 		
 	ClearBackground(RAYWHITE);
 
 	BeginMode3D(camera);
 
-	DrawCube((Vector3){ -16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, BLUE);     // Draw a blue wall
-	DrawCube((Vector3){ 16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, LIME);      // Draw a green wall
-	DrawCube((Vector3){ 0.0f, 2.5f, 16.0f }, 32.0f, 5.0f, 1.0f, GOLD);      // Draw a yellow wall
-	DrawCube((Vector3){ 0.0f, 2.5f, -16.0f }, 32.0f, 5.0f, 1.0f, BROWN);      // Draw a cyan wall
-	
-	DrawPlane((Vector3){ 0.0f, 0.0f, 0.0f }, (Vector2){ 32.0f, 32.0f }, BLACK); // Draw ground
+	DrawCube(enemyBoxPos, enemyBoxSize.x, enemyBoxSize.y, enemyBoxSize.z, GRAY);
+	DrawCubeWires(enemyBoxPos, enemyBoxSize.x, enemyBoxSize.y, enemyBoxSize.z, DARKGRAY);
 
-	// Draw some cubes around
-	for (int i = 0; i < MAX_COLUMNS; i++)
-	{
-	    DrawCube(positions[i], 2.0f, heights[i], 2.0f, colors[i]);
-	    DrawCubeWires(positions[i], 2.0f, heights[i], 2.0f, MAROON);
-	}
+	// Draw enemy-sphere
+	DrawSphere(enemySpherePos, enemySphereSize, GRAY);
+	DrawSphereWires(enemySpherePos, enemySphereSize, 16, 16, DARKGRAY);
 
-	DrawSphere((Vector3) {0.0f, 0.0f, 0.0f}, 2.0f, GREEN);
+	// Draw player
+	DrawCubeV(playerPosition, playerSize, playerColor);
 
-
-	// Draw player cube
-	//if (cameraMode == CAMERA_THIRD_PERSON)
-	//{
-	//    DrawCube(camera.target, 0.5f, 0.5f, 0.5f, PURPLE);
-	//    DrawCubeWires(camera.target, 0.5f, 0.5f, 0.5f, DARKPURPLE);
-	//}
-
+	DrawGrid(10, 1.0f);
 
 	EndMode3D();
 
@@ -200,42 +139,4 @@ int main()
 }
 
 
-static bool IsActionPressed(int action)
-{
-    bool result = false;
 
-    if (action < MAX_ACTION)
-	result = (IsKeyPressed(actionInputs[action].key));
-
-    return result;
-}
-
-
-static bool IsActionReleased(int action)
-{
-    bool result = false;
-
-    if (action < MAX_ACTION)
-	result = (IsKeyPressed(actionInputs[action].key));
-
-    return result;
-}
-
-static bool IsActionDown(int action)
-{
-    bool result = false;
-
-    if (action < MAX_ACTION)
-	result = (IsKeyPressed(actionInputs[action].key));
-
-    return result;
-}
-
-static void SetActionsDefault(void)
-{
-    actionInputs[ACTION_UP].key = KEY_UP;
-    actionInputs[ACTION_DOWN].key = KEY_DOWN;
-    actionInputs[ACTION_LEFT].key = KEY_LEFT;
-    actionInputs[ACTION_RIGHT].key = KEY_RIGHT;
-    actionInputs[ACTION_BRAKE].key = KEY_SPACE;
-}
