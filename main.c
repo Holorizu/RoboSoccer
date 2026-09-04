@@ -7,28 +7,18 @@
 #define PLAYER_SPEED 5.0f
 #define PLAYER_ROT_SPEED 2.0f
 
-typedef enum ActionType {
-    NO_ACTION = 0,
-    ACTION_UP,
-    ACTION_DOWN,
-    ACTION_LEFT,
-    ACTION_RIGHT,
-    ACTION_BRAKE,
-    MAX_ACTION
-} ActionType;
-
-
-typedef struct ActionInput {
-    int key;
-    int button;
-} ActionInput;
+typedef struct Player {
+    Vector3 position;
+    Vector3 size;
+    Vector3 rotation;
+} Player_bot;
 
 
 int main()
 {
 
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 1000;
+    const int screenHeight = 650;
 
     
     InitWindow(screenWidth, screenHeight, "Game_window");
@@ -36,13 +26,9 @@ int main()
 
     Vector3 playerPosition = { 0.0f, 1.0f, 2.0f };
     Vector3 playerSize = { 1.0f, 2.0f, 1.0f };
+    Vector3 playerDir = {0.0f, 0.0f, 0.0f};
     Vector3 rotation = {0.0f, 0.0f, 0.0f};
     Color playerColor = GREEN;
-
-    float playerX = 100;
-    float playerY = 300;
-    float velocityY = 0.0f;
-    float rotationside = 5.0f;
 
     Vector3 enemyBoxPos = { -4.0f, 1.0f, 0.0f };
     Vector3 enemyBoxSize = { 2.0f, 2.0f, 2.0f };
@@ -51,8 +37,6 @@ int main()
 
     float enemySphereSize = 1.5f;
     bool collision = false;
-    
-
 
 
     SetTargetFPS(60);
@@ -65,36 +49,25 @@ int main()
     camera.fovy = 45.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera mode type
 
-
-
     DisableCursor();
-
-    // Defining idk (i just wanna move the cube)
-    char actionSet = 0;
-    bool releaseAction = false;
-
-    Vector3 position = (Vector3){0.0f, 0.0f, 0.0f};
-    Vector3 size = (Vector3){40.0f, 40.0f, 40.0f};
-
 
     while (!WindowShouldClose())
     {
 	float dt = GetFrameTime();
-
 	
-	// update
-
-
 	// movement
-	if (IsKeyDown(KEY_RIGHT)) playerPosition.x += PLAYER_SPEED * dt;
-        else if (IsKeyDown(KEY_LEFT)) playerPosition.x -= PLAYER_SPEED * dt;
-        else if (IsKeyDown(KEY_DOWN)) playerPosition.z += PLAYER_SPEED * dt;
-        else if (IsKeyDown(KEY_UP)) playerPosition.z -= PLAYER_SPEED * dt;
-	else if (IsKeyDown(KEY_D)) playerPosition.z -= PLAYER_SPEED * dt;
+	playerDir.x = IsKeyDown(KEY_RIGHT) - IsKeyDown(KEY_LEFT);
+        playerDir.z = IsKeyDown(KEY_DOWN) - IsKeyDown(KEY_UP);
+	playerDir = Vector3Normalize(playerDir);
+
+	// update
+	playerPosition.x += playerDir.x * PLAYER_SPEED * dt;
+	playerPosition.z += playerDir.z * PLAYER_SPEED * dt;
 	
-	collision = false;
 
         // Check collisions player vs enemy-box
+	collision = false;
+	
         if (CheckCollisionBoxes(
             (BoundingBox){(Vector3){ playerPosition.x - playerSize.x/2,
                                      playerPosition.y - playerSize.y/2,
