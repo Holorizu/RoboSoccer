@@ -73,14 +73,19 @@ int main()
 	ballCollision = false;
 	playerCollision = false;
 	//canMove = false;
+	Vector3 go_forward  = getfor(direction);
 
 
 	// Controls
 	if (IsKeyDown(KEY_UP))
 	{
-	    Vector3 go_forward  = getfor(direction);
 	    playerPosition.x -= go_forward.x * PLAYER_SPEED * dt;
 	    playerPosition.z -= go_forward.z * PLAYER_SPEED * dt;	    
+	}
+	if (IsKeyDown(KEY_DOWN))
+	{
+	    playerPosition.x += go_forward.x * PLAYER_SPEED * dt;
+	    playerPosition.z += go_forward.z * PLAYER_SPEED * dt;	    
 	}
 	if (IsKeyDown(KEY_LEFT))
 	{
@@ -90,12 +95,7 @@ int main()
 	{
 	    direction -= PLAYER_ROT_SPEED * dt;
 	}
-	if (IsKeyDown(KEY_DOWN))
-	{
-	    Vector3 go_forward  = getfor(direction);
-	    playerPosition.x += go_forward.x * PLAYER_SPEED * dt;
-	    playerPosition.z += go_forward.z * PLAYER_SPEED * dt;	    
-	}
+
 
 
 
