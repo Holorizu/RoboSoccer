@@ -7,10 +7,6 @@
 //#define PLAYER_ACCEL 3.0f
 #define PLAYER_ROT_SPEED 6.0f
 
-typedef struct {
-    float x, y, z;
-} vec;
-
 Vector3 getfor(float yaw)
 {
     Vector3 forward;
